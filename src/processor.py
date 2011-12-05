@@ -1,8 +1,10 @@
+#!/usr/bin/env python
 import sys
 
 import geojson
 import transitfeed
 from osgeo import ogr
+
 
 def get_stop_time(trip, stop_name):
     for st in trip.GetStopTimes():
@@ -13,8 +15,8 @@ def get_stop_time(trip, stop_name):
 
 filepath = sys.argv[1]
 gtfs_path = sys.argv[2]
-route_id = sys.argv[3]
-output_path = sys.argv[4]
+route_id = raw_input("Enter route id: ")
+output_path = sys.argv[3]
 
 gpx = ogr.Open(filepath)
 
@@ -72,12 +74,14 @@ for i in xrange(track_path.GetPointCount()):
             for trip in forward:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['forward'].append((start.arrival_secs, end.arrival_secs))
-           
+                timings['forward'].append((start.arrival_secs,
+                        end.arrival_secs))
+
             for trip in reverse:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['reverse'].append((start.arrival_secs, end.arrival_secs))
+                timings['reverse'].append((start.arrival_secs,
+                        end.arrival_secs))
 
             segment.extra['timings'] = timings
 
