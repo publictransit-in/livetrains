@@ -74,14 +74,12 @@ for i in xrange(track_path.GetPointCount()):
             for trip in forward:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['forward'].append((start.arrival_secs,
-                        end.arrival_secs))
+                timings['forward'].append((start.arrival_secs, end.arrival_secs))
 
             for trip in reverse:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['reverse'].append((start.arrival_secs,
-                        end.arrival_secs))
+                timings['reverse'].append((start.arrival_secs, end.arrival_secs))
 
             segment.extra['timings'] = timings
 
