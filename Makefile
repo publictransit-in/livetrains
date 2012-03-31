@@ -12,7 +12,7 @@ all: $(GENERATED_JS) $(GENERATED_JSON) $(CSS)
 public/js/%.js: src/%.coffee
 	$(COFFEE) -o public/js/ -c $<
 
-data/%.geojson: data/%.gpx
+data/%.geojson: data/%.gpx $(PROCESSOR)
 	$(PROCESSOR) $< $(GTFS_PATH) $@
 
 public/css/%.css: src/%.css
