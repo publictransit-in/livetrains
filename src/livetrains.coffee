@@ -1,9 +1,8 @@
 create_map = ->
     map = new L.Map('map')
-    nexrad = new L.TileLayer.WMS("http://mesonet.agron.iastate.edu/cgi-bin/wms/nexrad/n0r.cgi", {
-    layers: 'nexrad-n0r-900913',
-    format: 'image/png',
-    attribution: "Weather data © 2011 IEM Nexrad"
+    nexrad = new L.TileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
+        subdomains: ['otile1','otile2','otile3','otile4'],
+        maxZoom: 18
     })
     chennai = new L.LatLng(13, 80)
     map.setView(chennai, 12)
