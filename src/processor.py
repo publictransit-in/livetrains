@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+import math
 
 import geojson
 import transitfeed
@@ -53,19 +54,60 @@ last_station = None
 current_path = []
 segments = []
 
+# From http://www.platoscave.net/blog/2009/oct/5/calculate-distance-latitude-longitude-python/
+# FIXME: verify this
+def haversine_distance(origin, destination):
+    lat1, lon1 = origin
+    lat2, lon2 = destination
+    radius = 6371000 # m
+
+    dlat = math.radians(lat2-lat1)
+    dlon = math.radians(lon2-lon1)
+    a = math.sin(dlat/2) * math.sin(dlat/2) + math.cos(math.radians(lat1)) \
+        * math.cos(math.radians(lat2)) * math.sin(dlon/2) * math.sin(dlon/2)
+    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+    d = radius * c
+
+    return d
+
+def calc_distance(current_path):
+    if len(current_path) < 2:
+        return 0
+
+    distance = 0
+
+    for i in range(1, len(current_path)):
+        distance += haversine_distance(current_path[i-1], current_path[i])
+
+    return distance
+
+def insert_geometry_distances(geometries):
+    geometries[2].extra['distances'] = []
+
+    if len(geometries[2].coordinates) < 2:
+        return
+
+    for i in range(1, len(geometries[2].coordinates)):
+        geometries[2].extra['distances'].append(haversine_distance(geometries[2].coordinates[i-1], geometries[2].coordinates[i]))
+
 for i in xrange(track_path.GetPointCount()):
     dot = track_path.GetPoint_2D(i)
     current_path.append(dot)
     if dot in stations:
         this_station = stations[dot]
         if last_station:
-            current_path.insert(0, last_station.coordinates)
+            if current_path[0] != last_station.coordinates:
+                current_path.insert(0, last_station.coordinates)
+
             segment = geojson.GeometryCollection()
             segment.geometries.append(last_station)
             segment.geometries.append(this_station)
             segment.geometries.append(geojson.LineString(current_path))
             segment.extra['begin'] = last_station.extra['name']
             segment.extra['end'] = this_station.extra['name']
+            segment.extra['distance'] = calc_distance(current_path)
+
+            insert_geometry_distances(segment.geometries)
 
             timings = {
                     'forward': [],
@@ -74,12 +116,22 @@ for i in xrange(track_path.GetPointCount()):
             for trip in forward:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['forward'].append((start.arrival_secs, end.arrival_secs))
+                timings['forward'].append({
+                                        'trip_id': trip.trip_id,
+                                        'start': start.arrival_secs,
+                                        'end': end.arrival_secs
+                                        })
+            timings['forward'].sort(key=lambda timing: timing['start'])
 
             for trip in reverse:
                 start = get_stop_time(trip, last_station.extra['name'])
                 end = get_stop_time(trip, this_station.extra['name'])
-                timings['reverse'].append((start.arrival_secs, end.arrival_secs))
+                timings['reverse'].append({
+                                        'trip_id': trip.trip_id,
+                                        'start': start.arrival_secs,
+                                        'end': end.arrival_secs
+                                        })
+            timings['reverse'].sort(key=lambda timing: timing['start'])
 
             segment.extra['timings'] = timings
 
