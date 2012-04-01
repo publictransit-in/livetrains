@@ -42,22 +42,27 @@ $ ->
             map.addLayer(geojsonlayer)
 
             time = 15300
-            marker = new L.Marker(new L.LatLng(0, 0))
-            map.addLayer(marker)
+            markers = { }
+
+            newMarkerIconClass = L.Icon.extend({iconUrl: "img/new-marker.png",});
+            newMarkerIcon = new newMarkerIconClass();
 
             doeet = ->
                 trains = []
                 for feature in data.features
                     trains.push(train) for train in calculate_trains(feature, time) when train.length != 0
-                time += 10
+                time += 100
 
-                marker.setLatLng(new L.LatLng(trains[0][0][1][1], trains[0][0][1][0]))
-                marker.bindPopup("And you never will!").openPopup()
+                for train in trains
+                    if not markers[train[0][0].trip_id]
+                        markers[train[0][0].trip_id] = new L.Marker(new L.LatLng(0, 0), icon:newMarkerIcon)
+                        map.addLayer(markers[train[0][0].trip_id])
+
+                    markers[train[0][0].trip_id].setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
+
                 window.setTimeout(doeet, 300)
 
             window.setTimeout(doeet, 300)
 
-            #console.log(trains)
-            
             return true
     )
