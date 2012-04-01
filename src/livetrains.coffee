@@ -41,7 +41,7 @@ $ ->
             geojsonlayer = new L.GeoJSON(data)
             map.addLayer(geojsonlayer)
 
-            time = 14400
+            time = 15300
             markers = { }
 
             newMarkerIconClass = L.Icon.extend({iconUrl: "img/new-marker.png",});
@@ -51,7 +51,7 @@ $ ->
                 trains = []
                 for feature in data.features
                     trains.push(train) for train in calculate_trains(feature, time) when train.length != 0
-                time += 100
+                time += 1
 
                 for train in trains
                     if not markers[train[0][0].trip_id]
@@ -61,9 +61,9 @@ $ ->
                     markers[train[0][0].trip_id].setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
 
                 if (time < 86400)
-                    window.setTimeout(doeet, 300)
+                    window.setTimeout(doeet, 1000)
 
-            window.setTimeout(doeet, 300)
+            window.setTimeout(doeet, 1000)
 
             return true
     )
