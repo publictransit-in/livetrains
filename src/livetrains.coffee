@@ -4,7 +4,7 @@ create_map = ->
         subdomains: ['otile1','otile2','otile3','otile4'],
         maxZoom: 18
     })
-    chennai = new L.LatLng(13, 80)
+    chennai = new L.LatLng(13.0226188, 80.2603651)
     map.setView(chennai, 12)
     map.addLayer(nexrad)
     return map
@@ -41,7 +41,7 @@ $ ->
             geojsonlayer = new L.GeoJSON(data)
             map.addLayer(geojsonlayer)
 
-            time = 15300
+            time = 14400
             markers = { }
 
             newMarkerIconClass = L.Icon.extend({iconUrl: "img/new-marker.png",});
@@ -60,7 +60,8 @@ $ ->
 
                     markers[train[0][0].trip_id].setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
 
-                window.setTimeout(doeet, 300)
+                if (time < 86400)
+                    window.setTimeout(doeet, 300)
 
             window.setTimeout(doeet, 300)
 
