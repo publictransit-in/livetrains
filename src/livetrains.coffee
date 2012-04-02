@@ -102,7 +102,7 @@ $ ->
             # Distinguish trains by a different marker
             newMarkerIconClass = L.Icon.extend({
                                         iconUrl: "img/choo-choo.png",
-                                        iconSize: new L.Point(41, 25),
+                                        iconSize: new L.Point(29, 41),
                                 });
             newMarkerIcon = new newMarkerIconClass();
 
