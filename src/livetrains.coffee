@@ -90,6 +90,8 @@ $ ->
     map = create_map()
     $.getJSON('mrts.json',
         (data) ->
+            REFRESH_RATE = 5 # Hz
+
             geojsonlayer = new L.GeoJSON(data)
             map.addLayer(geojsonlayer)
 
@@ -110,7 +112,7 @@ $ ->
                 # find what segments have a train at the moment
                 for feature in data.features
                     trains.push(train) for train in calculate_trains(feature, time) when train.length != 0
-                time += 1
+                time += 1 / REFRESH_RATE
 
                 for train in trains
                     # We create a marker for each trip_id
@@ -123,9 +125,9 @@ $ ->
 
                 # We can call it a day :}
                 if (time < 86400)
-                    window.setTimeout(doeet, 1000)
+                    window.setTimeout(doeet, 1000 / REFRESH_RATE)
 
-            window.setTimeout(doeet, 1000)
+            window.setTimeout(doeet, 1000 / REFRESH_RATE)
 
             return true
     )
