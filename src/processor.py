@@ -57,8 +57,8 @@ segments = []
 # From http://www.platoscave.net/blog/2009/oct/5/calculate-distance-latitude-longitude-python/
 # FIXME: verify this
 def haversine_distance(origin, destination):
-    lat1, lon1 = origin
-    lat2, lon2 = destination
+    lon1, lat1 = origin
+    lon2, lat2 = destination
     radius = 6371000 # m
 
     dlat = math.radians(lat2-lat1)
