@@ -17,6 +17,46 @@ check_train = (train, time) ->
     else
         return true
 
+PI = 3.141592653589793
+
+# Convert from degrees to radians
+toRad = (deg) ->
+    return deg * PI / 180;
+
+# Convert from radians to degrees
+toDeg = (rad) ->
+    return rad * 180 / PI
+
+# Given a line segment and distance along it, returns the point at that
+# distance when travelled along the line. The first attempt that this will be
+# using approximations along a sphere.
+#
+# Code is taken from: http://www.movable-type.co.uk/scripts/latlong.html
+#
+# If all this math ends up slowing things down, we should drop down to the
+# simpler rectilinear form for interpolation
+find_position = (begin, end, distance) ->
+    lat1 = toRad(begin[1])
+    lon1 = toRad(begin[0])
+    lat2 = toRad(end[1])
+    lon2 = toRad(end[0])
+    dLat = toRad(end[1] - begin[1])
+    dLon = toRad(end[0] - begin[0])
+    R = 6371000
+    d = distance
+
+    y = Math.sin(dLon) * Math.cos(lat2);
+    x = Math.cos(lat1)*Math.sin(lat2) -
+        Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+    brng = Math.atan2(y, x)
+
+    lat = Math.asin( Math.sin(lat1)*Math.cos(d/R) +
+            Math.cos(lat1)*Math.sin(d/R)*Math.cos(brng) );
+    lon = lon1 + Math.atan2(Math.sin(brng)*Math.sin(d/R)*Math.cos(lat1),
+            Math.cos(d/R)-Math.sin(lat1)*Math.sin(lat2));
+
+    return [toDeg(lon), toDeg(lat)]
+
 # Given a station pair and line segments making up the route (feature), and the
 # current time, returns a position on the given segment (train)
 get_train_position = (train, feature, time) ->
@@ -24,21 +64,23 @@ get_train_position = (train, feature, time) ->
 
     i = 0
     total = 0
+    rem = 0
 
     for seg_distance in feature.geometries[2].distances
         total = total + seg_distance
         i = i + 1
 
         if (total > distance)
+            rem = distance - (total - seg_distance)
             break
 
-    # FIXME: This places us at the beginning of the line segment that we are
-    # contained in. This should be refined to actually interpolate to a
-    # coordinate for smooth movements.
-    return feature.geometries[2].coordinates[i]
+    return find_position(feature.geometries[2].coordinates[i-1],
+                         feature.geometries[2].coordinates[i],
+                         rem)
 
 # Iterates the list of station paris (features) and returns and array of ones
-# between which there exists a current train
+# between which there exists a current train and the coordinates at which to
+# find the train.
 calculate_trains = (feature, time) ->
     # FIXME: Forward going timings seem to be broken (start > end)
     interesting_trains = [[train, get_train_position(train, feature, time)] for train in feature.timings.reverse when check_train(train, time)]
