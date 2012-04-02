@@ -12,10 +12,53 @@ create_map = ->
 
 # See if the given segment (train) encompasses the current time
 check_train = (train, time) ->
-    if (train.start > train.end) or (train.start > time) or (train.end < time)
-        return false
+    if train.start > time
+        return -1
+    else if train.end < time
+        return 1
     else
-        return true
+        return 0
+
+# Find train(s) running between a station pair at the given time
+# Uses a binary search since there are a lot of segments to search through and
+# we sort them in preprocessing
+find_trains = (timings, time, begin, end) ->
+    if begin > end
+        return []
+
+    i = Math.floor((end + begin) / 2)
+    ret = check_train(timings[i], time)
+
+    if begin is end
+        if ret is 0
+            return [ timings[i] ]
+        else
+            return []
+
+    if ret is -1
+        return find_trains(timings, time, begin, i - 1)
+    else if ret is 1
+        return find_trains(timings, time, i + 1, end)
+    else
+        # found one, let's go back and find the first
+        i = i - 1 while check_train(timings[i], time) is 0 and i > begin
+
+        # found the first match ...
+        if i isnt begin or check_train(timings[i], time)
+            i = i + 1
+
+        first = i
+
+        # ... now lets find the last
+        i = i + 1 while check_train(timings[i], time) is 0 and i < end
+
+        # found the last
+        if i isnt end or check_train(timings[i], time)
+            i = i - 1
+
+        last = i
+
+        return timings[first..last]
 
 PI = 3.141592653589793
 
@@ -83,7 +126,7 @@ get_train_position = (train, feature, time) ->
 # find the train.
 calculate_trains = (feature, time) ->
     # FIXME: Forward going timings seem to be broken (start > end)
-    interesting_trains = [[train, get_train_position(train, feature, time)] for train in feature.timings.reverse when check_train(train, time)]
+    interesting_trains = [[train, get_train_position(train, feature, time)] for train in find_trains(feature.timings.reverse, time, 0, feature.timings.reverse.length)]
     return interesting_trains
 
 $ ->
