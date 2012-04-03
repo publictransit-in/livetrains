@@ -44,11 +44,11 @@ route = schedule.GetRoute(route_id)
 # No idea where pattern_id comes from
 # Pretty sure they're gonna fuck me over big time someday
 # Assume that first key is A -> B and second is B -> A
-forward, reverse = route.GetPatternIdTripDict().values()
+reverse, forward = route.GetPatternIdTripDict().values()
 # Make sure that our assumptions hold
 # Better to fail and fix than to fail and get laughed at
-assert [t for t in forward if t.direction_id == 1] == []
-assert [t for t in reverse if t.direction_id == 0] == []
+assert [t for t in forward if t.direction_id == 0] == []
+assert [t for t in reverse if t.direction_id == 1] == []
 
 last_station = None
 current_path = []
@@ -124,8 +124,8 @@ for i in xrange(track_path.GetPointCount()):
             timings['forward'].sort(key=lambda timing: timing['start'])
 
             for trip in reverse:
-                start = get_stop_time(trip, last_station.extra['name'])
-                end = get_stop_time(trip, this_station.extra['name'])
+                start = get_stop_time(trip, this_station.extra['name'])
+                end = get_stop_time(trip, last_station.extra['name'])
                 timings['reverse'].append({
                                         'trip_id': trip.trip_id,
                                         'start': start.arrival_secs,

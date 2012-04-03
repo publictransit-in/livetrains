@@ -125,8 +125,8 @@ get_train_position = (train, feature, time) ->
 # between which there exists a current train and the coordinates at which to
 # find the train.
 calculate_trains = (feature, time) ->
-    # FIXME: Forward going timings seem to be broken (start > end)
-    interesting_trains = [[train, get_train_position(train, feature, time)] for train in find_trains(feature.timings.reverse, time, 0, feature.timings.reverse.length)]
+    # FIXME: Reverse going timings seem to be broken (start > end)
+    interesting_trains = [[train, get_train_position(train, feature, time)] for train in find_trains(feature.timings.forward, time, 0, feature.timings.forward.length)]
     return interesting_trains
 
 $ ->
