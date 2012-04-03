@@ -176,9 +176,16 @@ $ ->
                 trains = []
 
                 # clear out all markers before we draw them afresh
-                # XXX: how do we clean out markers that are no longer relevant?
-                for dontcare, marker of markers
-                    map.removeLayer(marker)
+                # The 'active' property is set to 2 on every addLayer call and
+                # decremented for every removeLayer. If the value drops to
+                # zero, this means we no longer need to update it and can get
+                # rid of it
+                for key, marker of markers
+                    map.removeLayer(marker.marker)
+                    marker.active = marker.active - 1
+
+                    if marker.active is 0
+                        delete markers[key]
 
                 # find what segments have a train at the moment
                 for feature in data.features
@@ -188,11 +195,14 @@ $ ->
                 for train in trains
                     # We create a marker for each trip_id
                     if not markers[train[0][0].trip_id]
-                        markers[train[0][0].trip_id] = new L.Marker(new L.LatLng(0, 0), icon:newMarkerIcon)
+                        marker = new L.Marker(new L.LatLng(0, 0), icon:newMarkerIcon)
+                        # See note above for a description of the 'active' property
+                        markers[train[0][0].trip_id] = { marker: marker, active: 2 }
 
                     # Now display this train
-                    map.addLayer(markers[train[0][0].trip_id])
-                    markers[train[0][0].trip_id].setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
+                    map.addLayer(markers[train[0][0].trip_id].marker)
+                    markers[train[0][0].trip_id].marker.setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
+                    markers[train[0][0].trip_id].active = 2
 
                 # We can call it a day :}
                 if (time < 86400)
