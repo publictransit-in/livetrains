@@ -102,14 +102,26 @@ find_position = (begin, end, distance) ->
 
 # Given a station pair and line segments making up the route (feature), and the
 # current time, returns a position on the given segment (train)
-get_train_position = (train, feature, time) ->
+get_train_position = (train, feature, time, forward) ->
     distance = feature.distance * (time - train.start) / (train.end - train.start)
+
+    if not feature.geometries[2].distances_rev
+        feature.geometries[2].distances_rev = []
+        len = feature.geometries[2].distances.length - 1
+
+        for i in [0..len]
+            feature.geometries[2].distances_rev[i] = feature.geometries[2].distances[len - i]
+
+    if (forward)
+        distances = feature.geometries[2].distances
+    else
+        distances = feature.geometries[2].distances_rev
 
     i = 0
     total = 0
     rem = 0
 
-    for seg_distance in feature.geometries[2].distances
+    for seg_distance in distances
         total = total + seg_distance
         i = i + 1
 
@@ -117,16 +129,27 @@ get_train_position = (train, feature, time) ->
             rem = distance - (total - seg_distance)
             break
 
-    return find_position(feature.geometries[2].coordinates[i-1],
-                         feature.geometries[2].coordinates[i],
-                         rem)
+    # Note that the loop above iterates over distances. distance[i] is the
+    # distance between coordinate[i-1] and cooridinate[i] (since distance[0] is
+    # the distance between coordinate[0] and coordinate[1]. Remember this if
+    # you're wondering why tha array index math below is the way it is.
+    if (forward)
+        return find_position(feature.geometries[2].coordinates[i - 1],
+                             feature.geometries[2].coordinates[i],
+                             rem)
+    else
+        return find_position(feature.geometries[2].coordinates[distances.length - i + 1],
+                             feature.geometries[2].coordinates[distances.length - i],
+                             rem)
 
 # Iterates the list of station paris (features) and returns and array of ones
 # between which there exists a current train and the coordinates at which to
 # find the train.
 calculate_trains = (feature, time) ->
     # FIXME: Reverse going timings seem to be broken (start > end)
-    interesting_trains = [[train, get_train_position(train, feature, time)] for train in find_trains(feature.timings.forward, time, 0, feature.timings.forward.length)]
+    interesting_trains = [[train, get_train_position(train, feature, time, true)] for train in find_trains(feature.timings.forward, time, 0, feature.timings.forward.length)]
+    temp = [[train, get_train_position(train, feature, time, false)] for train in find_trains(feature.timings.reverse, time, 0, feature.timings.reverse.length)]
+    interesting_trains.push(train) for train in temp
     return interesting_trains
 
 $ ->
