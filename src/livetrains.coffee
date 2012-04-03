@@ -1,5 +1,8 @@
 # Draw the initial map
 create_map = ->
+    # Performance hack, cuts about 10% of our CPU usage
+    L.Browser.webkit3d = false
+
     map = new L.Map('map')
     nexrad = new L.TileLayer("http://{s}.mqcdn.com/tiles/1.0.0/osm/{z}/{x}/{y}.png", {
         subdomains: ['otile1','otile2','otile3','otile4'],
