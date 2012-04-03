@@ -140,7 +140,7 @@ $ ->
 
             # FIXME: Just for testing. First train is a 4:15am
             time = 15300
-            markers = { }
+            markers = [ ]
 
             # Distinguish trains by a different marker
             newMarkerIconClass = L.Icon.extend({
@@ -152,6 +152,11 @@ $ ->
             doeet = ->
                 trains = []
 
+                # clear out all markers before we draw them afresh
+                # XXX: how do we clean out markers that are no longer relevant?
+                for dontcare, marker of markers
+                    map.removeLayer(marker)
+
                 # find what segments have a train at the moment
                 for feature in data.features
                     trains.push(train) for train in calculate_trains(feature, time) when train.length != 0
@@ -161,9 +166,9 @@ $ ->
                     # We create a marker for each trip_id
                     if not markers[train[0][0].trip_id]
                         markers[train[0][0].trip_id] = new L.Marker(new L.LatLng(0, 0), icon:newMarkerIcon)
-                        map.addLayer(markers[train[0][0].trip_id])
 
                     # Now display this train
+                    map.addLayer(markers[train[0][0].trip_id])
                     markers[train[0][0].trip_id].setLatLng(new L.LatLng(train[0][1][1], train[0][1][0]))
 
                 # We can call it a day :}
