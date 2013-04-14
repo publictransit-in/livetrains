@@ -24,6 +24,9 @@ public/%.json: data/%.geojson
 	cp $< $@
 
 clean:
-	rm -f $(GENERATED_JS) $(CSS) $(GENERATED_GEOJSON)
+	rm -f $(GENERATED_JS) $(CSS) $(GENERATED_GEOJSON) public/*.json
+
+test:
+	find . -name "*.py" -print0 | xargs -0 python -m doctest
 
 .PHONY: all clean

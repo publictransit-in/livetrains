@@ -4,7 +4,6 @@ Read Me
 Pre-requisites
 --------------
 * [Coffeescript](http://jashkenas.github.com/coffee-script/)
-* [SASS](http://sass-lang.com/)
 * [GeoJSON Python Library](http://pypi.python.org/pypi/geojson/1.0)
 * [Transitfeed Python Library](http://code.google.com/p/googletransitdatafeed/)
 * [GDAL Python library](http://pypi.python.org/pypi/GDAL/)
@@ -15,12 +14,25 @@ Optional requirements
 
 Install (On Ubuntu)
 -------------------
-* `sudo apt-get install coffeescript libhaml-ruby1.8 python-pip python-gdal`
+* `sudo apt-get install make coffeescript python-pip python-gdal`
 * `sudo pip install geojson transitfeed pytz`
 * `make`
 
+Install (On Ubuntu with virtualenv)
+-----------------------------------
+* `sudo apt-get install make coffeescript python-pip libgdal1-dev`
+* `sudo pip install virtualenv`
+* `virtualenv venv`
+* `. venv/bin/activate`
+* `pip install -r requirements.txt`
+* `sudo wget http://svn.osgeo.org/gdal/branches/1.7/gdal/ogr/swq.h -o /usr/include/swq.h`
+* `pip install --no-install GDAL==1.7.0`
+* `cd venv/build/GDAL && python setup.py build_ext --include-dirs=/usr/include/gdal`
+* `pip install --no-download GDAL`
+
 Testing
 -------
+* `make test`
 * Point your browser to ./public/demo.html
 
 Deployment
